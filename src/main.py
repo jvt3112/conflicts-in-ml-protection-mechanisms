@@ -84,8 +84,8 @@ def main(cfg: schemas.Config) -> None:
     log.info(f"Full data path: {data_path.resolve()}")
 
     wandb.init(
-        project="ml-conf-interest",
-        entity="YOUR ENTITY",
+        project="conflicting-mech",
+        # entity="YOUR ENTITY",
         config=schemas.to_dict(cfg)
     )
 

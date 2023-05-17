@@ -85,9 +85,9 @@ def train(cfg_dp: DPTrainingSchema, cfg_learner: LearnerSchema,
 
     # Intialize neural network
     model = select_model(cfg_learner.model_name, cfg_learner.num_classes, log)
-    if cfg_dp.use_dp:
-        model = convert_batchnorm_modules(model)
-        model = replace_all_modules(model, nn.Dropout, lambda _: nn.Identity())
+    # if cfg_dp.use_dp:
+    #     model = convert_batchnorm_modules(model)
+    #     model = replace_all_modules(model, nn.Dropout, lambda _: nn.Identity())
     model = model.to(device)
 
     # Loading data
@@ -96,17 +96,17 @@ def train(cfg_dp: DPTrainingSchema, cfg_learner: LearnerSchema,
     if cfg_dp.wm_train:
         wm_set = select_watermark_data(cfg_learner.watermark_data, cfg_dp.trigger_size, data_path, cfg_learner.num_classes, cfg_learner.normalize_with_imagenet_vals, log)
 
-    if cfg_dp.use_dp:
-        train_num_samples = len(train_set)
-        train_sample_rate = cfg_dp.train_batch_size / train_num_samples
-        train_loader = DataLoader(
-            train_set,
-            batch_sampler=UniformWithReplacementSampler(
-                num_samples=train_num_samples, sample_rate=train_sample_rate,
-            ),
-            pin_memory=True, num_workers=cpu_cores)
-    else:
-        train_loader = DataLoader(train_set, cfg_dp.train_batch_size, shuffle=True, pin_memory=True, num_workers=cpu_cores)
+    # if cfg_dp.use_dp:
+    #     train_num_samples = len(train_set)
+    #     train_sample_rate = cfg_dp.train_batch_size / train_num_samples
+    #     train_loader = DataLoader(
+    #         train_set,
+    #         batch_sampler=UniformWithReplacementSampler(
+    #             num_samples=train_num_samples, sample_rate=train_sample_rate,
+    #         ),
+    #         pin_memory=True, num_workers=cpu_cores)
+    # else:
+    #     train_loader = DataLoader(train_set, cfg_dp.train_batch_size, shuffle=True, pin_memory=True, num_workers=cpu_cores)
 
     if cfg_dp.wm_train:
         if cfg_dp.use_dp:
