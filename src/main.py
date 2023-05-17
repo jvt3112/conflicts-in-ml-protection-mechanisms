@@ -24,7 +24,7 @@ import wandb
 
 from . import schemas
 from . import os_layer
-from .dp import dp_and_watermark
+# from .dp import dp_and_watermark
 from .adv import adv_and_watermark
 
 os.environ["HYDRA_FULL_ERROR"] = "1"
@@ -89,11 +89,11 @@ def main(cfg: schemas.Config) -> None:
         config=schemas.to_dict(cfg)
     )
 
-    if cfg.task.name in ["dp-wm", "dp-only", "wm-only"]:
-        log.info("Maybe watermarking with or without DP.")
-        dp_and_watermark.train(cfg.task, cfg.learner, data_path, device, log)
+    # if cfg.task.name in ["dp-wm", "dp-only", "wm-only"]:
+    #     log.info("Maybe watermarking with or without DP.")
+    #     dp_and_watermark.train(cfg.task, cfg.learner, data_path, device, log)
 
-    elif cfg.task.name in ["adv-wm", "adv-only"]:
+    if cfg.task.name in ["adv-wm", "adv-only"]:
         log.info("Adversarial training with or without watermarking.")
         adv_and_watermark.train(cfg.task, cfg.learner, data_path, device, log)
 
