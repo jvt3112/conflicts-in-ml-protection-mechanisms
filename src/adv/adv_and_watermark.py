@@ -103,12 +103,12 @@ def evaluate(model: torch.nn.Module, num_classes: int, epoch: int, test_loader: 
         log.info(f"Epoch {epoch}: {name}/accuracy: {avg_accuracy}")
         wandb.log({ f"accuracy/{name}/avg": avg_accuracy, "epoch": epoch })
 
-        # Log per-class accuracy only on test set
-        if name == "test":
-            log.info("Per class accuracy:")
-            for i, acc in enumerate(confusion_matrix.diag() / confusion_matrix.sum(1)):
-                log.info(f"Acc. of {i}: {acc:}.")
-                wandb.log({ f"accuracy/{name}/class_{i}": acc, "epoch": epoch })
+        # # Log per-class accuracy only on test set
+        # if name == "test":
+        #     log.info("Per class accuracy:")
+        #     for i, acc in enumerate(confusion_matrix.diag() / confusion_matrix.sum(1)):
+        #         log.info(f"Acc. of {i}: {acc:}.")
+        #         wandb.log({ f"accuracy/{name}/class_{i}": acc, "epoch": epoch })
 
 
     return avg_accuracy

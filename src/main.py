@@ -86,7 +86,7 @@ def main(cfg: schemas.Config) -> None:
     wandb.init(
         project="conflicting-mech",
         # entity="YOUR ENTITY",
-        name= str(cfg.task.name)+ str(cfg.learner),
+        name= str(cfg.task.name)+ str(cfg.learner.training_data),
         config=schemas.to_dict(cfg)
     )
 
