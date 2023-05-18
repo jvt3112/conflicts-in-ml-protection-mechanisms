@@ -58,7 +58,7 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
         logits = model(x_adv)
         model.zero_grad()
         
-        loss = loss_function(logits, y,  reduction="sum")
+        loss = loss_function(logits, y)
         loss.backward()
         with torch.no_grad():                      
             grad = x_adv.grad
