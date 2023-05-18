@@ -42,47 +42,47 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
     Returns:
         [torch.Tensor]: Final perturbation.
     """
-    def random_init(x):
-        x = x + (torch.rand_like(x) * 2 * cfg_adv.eps - cfg_adv.eps)
-        x = torch.clamp(x, 0, 1)
-        return x
+    # def random_init(x):
+    #     x = x + (torch.rand_like(x) * 2 * cfg_adv.eps - cfg_adv.eps)
+    #     x = torch.clamp(x, 0, 1)
+    #     return x
 
     
-    x_adv = X.detach().clone()
+    # x_adv = X.detach().clone()
 
-    if cfg_adv.randomize:
-        x_adv = random_init(x_adv)
-
-    for i in range(cfg_adv.num_iter):
-        x_adv.requires_grad = True
-        logits = model(x_adv)
-        model.zero_grad()
-        
-        loss = loss_function(logits, y)
-        loss.backward()
-        with torch.no_grad():                      
-            grad = x_adv.grad
-            grad = grad.sign()
-            x_adv = x_adv + cfg_adv.alpha * grad
-            
-            # Projection
-            noise = torch.clamp(x_adv - X, min=-cfg_adv.eps, max=cfg_adv.eps)
-            x_adv = torch.clamp(X + noise, min=0, max=1)
-    return x_adv
-    
     # if cfg_adv.randomize:
-    #     delta = torch.rand_like(X, requires_grad=True)
-    #     delta.data = delta.data * 2 * cfg_adv.eps - cfg_adv.eps
-    # else:
-    #     delta = torch.zeros_like(X, requires_grad=True)
+    #     x_adv = random_init(x_adv)
 
-    # for _ in range(cfg_adv.num_iter):
-    #     loss = loss_function(model(torch.clamp(X+delta, min=0, max=1)), y)
+    # for i in range(cfg_adv.num_iter):
+    #     x_adv.requires_grad = True
+    #     logits = model(x_adv)
+    #     model.zero_grad()
+        
+    #     loss = loss_function(logits, y)
     #     loss.backward()
-    #     delta.data = (delta + cfg_adv.alpha*delta.grad.detach().sign()).clamp(-cfg_adv.eps,cfg_adv.eps)
-    #     delta.grad.zero_()
+    #     with torch.no_grad():                      
+    #         grad = x_adv.grad
+    #         grad = grad.sign()
+    #         x_adv = x_adv + cfg_adv.alpha * grad
+            
+    #         # Projection
+    #         noise = torch.clamp(x_adv - X, min=-cfg_adv.eps, max=cfg_adv.eps)
+    #         x_adv = torch.clamp(X + noise, min=0, max=1)
+    # return x_adv
+    
+    if cfg_adv.randomize:
+        delta = torch.rand_like(X, requires_grad=True)
+        delta.data = delta.data * 2 * cfg_adv.eps - cfg_adv.eps
+    else:
+        delta = torch.zeros_like(X, requires_grad=True)
 
-    # return torch.clamp(X+delta.detach(), min=0, max=1)
+    for _ in range(cfg_adv.num_iter):
+        loss = loss_function(model(X+delta), y)
+        loss.backward()
+        delta.data = (delta + cfg_adv.alpha*delta.grad.detach().sign()).clamp(-cfg_adv.eps,cfg_adv.eps)
+        delta.grad.zero_()
+
+    return X+delta.detach()
 
 def evaluate(model: torch.nn.Module, num_classes: int, epoch: int, test_loader: Tuple[str, DataLoader],
              loss_function: Callable, cfg_adv: AdvTrainingSchema,
