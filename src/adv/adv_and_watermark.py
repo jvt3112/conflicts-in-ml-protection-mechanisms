@@ -42,9 +42,9 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
     Returns:
         [torch.Tensor]: Final perturbation.
     """
-    def random_init(self, x):
-        x = x + (torch.rand_like(x) * 2 * self.epsilon - self.epsilon)
-        x = torch.clamp(x,*self.clamp)
+    def random_init(x):
+        x = x + (torch.rand_like(x) * 2 * cfg_adv.eps - cfg_adv.eps)
+        x = torch.clamp(x, 0, 1)
         return x
 
     
