@@ -161,13 +161,11 @@ def select_transform(ds_name: str, normalize_with_imagenet_vals: bool) -> List[t
     supported_train = {
         "MNIST": transforms.Compose([
             transforms.CenterCrop(28),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5], [0.5])]),
+            transforms.ToTensor()]),
 
         "FashionMNIST": transforms.Compose([
             transforms.CenterCrop(28),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5], [0.5])]),
+            transforms.ToTensor()]),
 
         "CIFAR10": transforms.Compose([
             transforms.RandomHorizontalFlip(),
