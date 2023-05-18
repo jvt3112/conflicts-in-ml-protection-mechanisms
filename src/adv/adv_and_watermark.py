@@ -50,7 +50,7 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
         delta = torch.zeros_like(X, requires_grad=True)
 
     for _ in range(cfg_adv.num_iter):
-        loss = loss_function(model(torch.clamp(X+delta.detach(), min=0, max=1)), y)
+        loss = loss_function(model(torch.clamp(X+delta, min=0, max=1)), y)
         loss.backward()
         delta.data = (delta + cfg_adv.alpha*delta.grad.detach().sign()).clamp(-cfg_adv.eps,cfg_adv.eps)
         delta.grad.zero_()
