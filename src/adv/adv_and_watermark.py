@@ -50,12 +50,12 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
         delta = torch.zeros_like(X, requires_grad=True)
 
     for _ in range(cfg_adv.num_iter):
-        loss = loss_function(model(X+delta), y)
+        loss = loss_function(model(torch.clamp(X+delta.detach(), min=0, max=1)), y)
         loss.backward()
         delta.data = (delta + cfg_adv.alpha*delta.grad.detach().sign()).clamp(-cfg_adv.eps,cfg_adv.eps)
         delta.grad.zero_()
 
-    return delta.detach()
+    return torch.clamp(X+delta.detach(), min=0, max=1)
 
 def evaluate(model: torch.nn.Module, num_classes: int, epoch: int, test_loader: Tuple[str, DataLoader],
              loss_function: Callable, cfg_adv: AdvTrainingSchema,
@@ -85,8 +85,8 @@ def evaluate(model: torch.nn.Module, num_classes: int, epoch: int, test_loader: 
 
             if name == "adv":
                 delta = torch.zeros_like(X, requires_grad=True)
-                delta = pgd_linf(model, X, y_true, loss_function, cfg_adv)
-                X += delta
+                X = pgd_linf(model, X, y_true, loss_function, cfg_adv)
+                
                 # clamp to [0,1] range for creating adversarial examples
                 # X = torch.clamp(X, 0, 1)
 
@@ -160,8 +160,8 @@ def train(cfg_adv: AdvTrainingSchema, cfg_learner: LearnerSchema, data_path: Pat
             X, y_true = X.to(device), y_true.to(device)
 
             delta = torch.zeros_like(X, requires_grad=True)
-            delta = pgd_linf(model, X, y_true, loss_func, cfg_adv)
-            X += delta
+            X = pgd_linf(model, X, y_true, loss_func, cfg_adv)
+            
             # clamp to [0,1] range for creating adversarial examples
             # X = torch.clamp(X, 0, 1)
 
@@ -197,8 +197,8 @@ def train(cfg_adv: AdvTrainingSchema, cfg_learner: LearnerSchema, data_path: Pat
 
                 if cfg_adv.adv_wm_train:
                     delta = torch.zeros_like(X, requires_grad=True)
-                    delta = pgd_linf(model, X, y_true, loss_func, cfg_adv)
-                    X += delta
+                    X = pgd_linf(model, X, y_true, loss_func, cfg_adv)
+                    
                     # clamp to [0,1] range for creating adversarial examples
                     # X = torch.clamp(X, 0, 1)
 
