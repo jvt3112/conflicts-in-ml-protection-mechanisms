@@ -173,8 +173,8 @@ def train(cfg_adv: AdvTrainingSchema, cfg_learner: LearnerSchema, data_path: Pat
         wm_loader = DataLoader(wm_set, batch_size=cfg_adv.wm_batch_size, shuffle=True, pin_memory=True, num_workers=cpu_cores)
 
     loss_func = torch.nn.CrossEntropyLoss().to(device)
-    opt = torch.optim.SGD(model.parameters(), lr=cfg_adv.lr, momentum=0.9, weight_decay=5e-4)
-    sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=cfg_adv.lr, div_factor=20, steps_per_epoch=len(train_loader), epochs=cfg_adv.epochs)
+    opt = torch.optim.SGD(model.parameters(), lr=0.005, momentum=0.9, weight_decay=5e-4)
+    # sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=cfg_adv.lr, div_factor=20, steps_per_epoch=len(train_loader), epochs=cfg_adv.epochs)
 
     save_dir = Path(os.getcwd())
 
