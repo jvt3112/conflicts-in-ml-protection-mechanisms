@@ -47,7 +47,6 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
         x = torch.clamp(x, 0, 1)
         return x
 
-    myModel = model
     x_adv = X.detach().clone()
 
     if cfg_adv.randomize:
@@ -55,8 +54,8 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
 
     for i in range(cfg_adv.num_iter):
         x_adv.requires_grad = True
-        logits = myModel(x_adv)
-        myModel.zero_grad()
+        logits = model(x_adv)
+        model.zero_grad()
         
         loss = loss_function(logits, y)
         loss.backward()
@@ -118,12 +117,18 @@ def evaluate(model: torch.nn.Module, num_classes: int, epoch: int, test_loader: 
             # X = torch.clamp(X, 0, 1)
 
         y_pred = model(X)
-        predicted = torch.argmax(y_pred, dim=1)
+        # predicted = torch.argmax(y_pred, dim=1)
 
-        total += X.shape[0]
-        correct += (predicted == y_true).sum().item()
-        for t,p in zip(y_true.view(-1), predicted.view(-1)):
-            confusion_matrix[t.long(), p.long()] += 1
+        # Prediction
+        _, pred_labels = torch.max(y_pred, 1)
+        pred_labels = pred_labels.view(-1)
+        correct += torch.sum(torch.eq(pred_labels, y_true)).item()
+        total += len(y_true)
+
+        # total += X.shape[0]
+        # correct += (predicted == y_true).sum().item()
+        # for t,p in zip(y_true.view(-1), predicted.view(-1)):
+        #     confusion_matrix[t.long(), p.long()] += 1
 
     avg_accuracy = correct / total
 
@@ -267,4 +272,4 @@ def train(cfg_adv: AdvTrainingSchema, cfg_learner: LearnerSchema, data_path: Pat
         log.info(f"epoch/lr: {lr}")
 
     # Saving final model
-    save_model_if_better(model, test_acc, best_test_accuracy_so_far, save_dir, "final", log)
+    # save_model_if_better(model, test_acc, best_test_accuracy_so_far, save_dir, "final", log)
