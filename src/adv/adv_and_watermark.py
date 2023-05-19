@@ -160,8 +160,8 @@ def train(cfg_adv: AdvTrainingSchema, cfg_learner: LearnerSchema, data_path: Pat
     cpu_cores = min(4, cpu_count())
     train_set, test_set = select_training_data(cfg_learner.training_data, data_path, cfg_learner.normalize_with_imagenet_vals, log)
 
-    train_loader = DataLoader(train_set, batch_size=cfg_adv.train_batch_size, shuffle=True, pin_memory=True, num_workers=cpu_cores)
-    test_loader = DataLoader(test_set, batch_size=cfg_adv.test_batch_size, shuffle=False, pin_memory=True, num_workers=cpu_cores)
+    train_loader = DataLoader(train_set, batch_size=cfg_adv.train_batch_size, shuffle=True)
+    test_loader = DataLoader(test_set, batch_size=cfg_adv.test_batch_size, shuffle=False)
 
     if cfg_adv.wm_train:
         wm_set = select_watermark_data(cfg_learner.watermark_data, cfg_adv.trigger_size, data_path, cfg_learner.num_classes, cfg_learner.normalize_with_imagenet_vals, log)
