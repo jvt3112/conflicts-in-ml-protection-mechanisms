@@ -47,7 +47,7 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
         x = torch.clamp(x, 0, 1)
         return x
 
-    
+    myModel = model
     x_adv = X.detach().clone()
 
     if cfg_adv.randomize:
@@ -55,8 +55,8 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
 
     for i in range(cfg_adv.num_iter):
         x_adv.requires_grad = True
-        logits = model(x_adv)
-        model.zero_grad()
+        logits = myModel(x_adv)
+        myModel.zero_grad()
         
         loss = loss_function(logits, y)
         loss.backward()
@@ -102,33 +102,33 @@ def evaluate(model: torch.nn.Module, num_classes: int, epoch: int, test_loader: 
     model.eval()
 
     name, loader = test_loader
-    grad_context = nullcontext() if name == "adv" else torch.no_grad()
+    # grad_context = nullcontext() if name == "adv" else torch.no_grad()
 
-    with grad_context:
-        correct, total = 0.0, 0.0
-        confusion_matrix = torch.zeros(num_classes, num_classes) # per-class accuracy
-        for X, y_true in loader:
-            X, y_true = X.to(device), y_true.to(device)
+    # with grad_context:
+    correct, total = 0.0, 0.0
+    confusion_matrix = torch.zeros(num_classes, num_classes) # per-class accuracy
+    for X, y_true in loader:
+        X, y_true = X.to(device), y_true.to(device)
 
-            if name == "adv":
-                delta = torch.zeros_like(X, requires_grad=True)
-                X = pgd_linf(model, X, y_true, loss_function, cfg_adv)
-                
-                # clamp to [0,1] range for creating adversarial examples
-                # X = torch.clamp(X, 0, 1)
+        if name == "adv":
+            delta = torch.zeros_like(X, requires_grad=True)
+            X = pgd_linf(model, X, y_true, loss_function, cfg_adv)
+            
+            # clamp to [0,1] range for creating adversarial examples
+            # X = torch.clamp(X, 0, 1)
 
-            y_pred = model(X)
-            predicted = torch.argmax(y_pred, dim=1)
+        y_pred = model(X)
+        predicted = torch.argmax(y_pred, dim=1)
 
-            total += X.shape[0]
-            correct += (predicted == y_true).sum().item()
-            for t,p in zip(y_true.view(-1), predicted.view(-1)):
-                confusion_matrix[t.long(), p.long()] += 1
+        total += X.shape[0]
+        correct += (predicted == y_true).sum().item()
+        for t,p in zip(y_true.view(-1), predicted.view(-1)):
+            confusion_matrix[t.long(), p.long()] += 1
 
-        avg_accuracy = correct / total
+    avg_accuracy = correct / total
 
-        log.info(f"Epoch {epoch}: {name}/accuracy: {avg_accuracy}")
-        wandb.log({ f"accuracy/{name}/avg": avg_accuracy, "epoch": epoch })
+    log.info(f"Epoch {epoch}: {name}/accuracy: {avg_accuracy}")
+    wandb.log({ f"accuracy/{name}/avg": avg_accuracy, "epoch": epoch })
 
         # # Log per-class accuracy only on test set
         # if name == "test":
@@ -167,7 +167,7 @@ def train(cfg_adv: AdvTrainingSchema, cfg_learner: LearnerSchema, data_path: Pat
         wm_set = select_watermark_data(cfg_learner.watermark_data, cfg_adv.trigger_size, data_path, cfg_learner.num_classes, cfg_learner.normalize_with_imagenet_vals, log)
         wm_loader = DataLoader(wm_set, batch_size=cfg_adv.wm_batch_size, shuffle=True, pin_memory=True, num_workers=cpu_cores)
 
-    loss_func = torch.nn.CrossEntropyLoss()
+    loss_func = torch.nn.CrossEntropyLoss().to(device)
     opt = torch.optim.SGD(model.parameters(), lr=cfg_adv.lr, momentum=0.9, weight_decay=5e-4)
     sched = torch.optim.lr_scheduler.OneCycleLR(opt, max_lr=cfg_adv.lr, div_factor=20, steps_per_epoch=len(train_loader), epochs=cfg_adv.epochs)
 
