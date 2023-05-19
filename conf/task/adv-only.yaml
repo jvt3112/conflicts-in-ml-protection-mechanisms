@@ -5,7 +5,7 @@ name: adv-only
 train_batch_size: 256
 test_batch_size: 256
 lr: 0.005
-epochs: 100
+epochs: 10
 
 log_interval: 100 # in iterations
 
