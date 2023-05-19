@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 import wandb
-
+import torch.nn.functional as F
 from ..schemas import AdvTrainingSchema, LearnerSchema
 from ..models import select_model, save_model_if_better
 from ..data import select_training_data, select_watermark_data
@@ -57,7 +57,7 @@ def pgd_linf(model: torch.nn.Module, X: torch.Tensor, y: torch.Tensor, loss_func
         logits = model(x_adv)
         model.zero_grad()
         
-        loss = loss_function(logits, y)
+        loss = F.cross_entropy(logits, y,  reduction="sum")
         loss.backward()
         with torch.no_grad():                      
             grad = x_adv.grad
